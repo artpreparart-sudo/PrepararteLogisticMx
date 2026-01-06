@@ -15,8 +15,10 @@ interface AppContextType {
   updateSalon: (id: string, salon: Partial<Salon>) => void;
   deleteSalon: (id: string) => void;
   getSalonsByCity: (cityName: string, stateName: string) => Salon[];
-  addCity: (stateName: string, cityName: string) => void;
+  addCity: (stateName: string, cityName: string, coverImage?: string) => void;
+  deleteCity: (cityId: string) => void;
   addState: (stateName: string) => void;
+  editStateImage: (stateId: string, backgroundImage: string) => void;
   exportData: () => BackupPayload;
   importData: (data: BackupPayload) => void;
 }
@@ -32,6 +34,11 @@ import { loadStates, saveStates } from '../db';
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  function editStateImage(stateId: string, backgroundImage: string) {
+    setStates(states => states.map(state =>
+      state.id === stateId ? { ...state, backgroundImage } : state
+    ));
+  }
   const [states, setStates] = useState<State[]>(mexicanStates);
   const [cities, setCities] = useState<City[]>([]);
   const [salones, setSalones] = useState<Salon[]>([]);
@@ -126,7 +133,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addSalon = (salon: Salon) => {
-    setSalones([...salones, salon]);
+    const updatedSalones = [...salones, salon].sort((a, b) => a.hotelName.localeCompare(b.hotelName));
+    setSalones(updatedSalones);
   };
 
   const updateSalon = (id: string, salonData: Partial<Salon>) => {
@@ -143,16 +151,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSalones(salones.filter(salon => salon.id !== id));
   };
 
-  const addCity = (stateName: string, cityName: string) => {
+  const addCity = (stateName: string, cityName: string, coverImage?: string) => {
     const state = states.find(s => s.name === stateName);
     if (state && !cities.find(c => c.name === cityName && c.stateId === state.id)) {
       const newCity: City = {
         id: `${state.id}-${Date.now()}`,
         stateId: state.id,
         name: cityName,
+        coverImage,
       };
-      setCities([...cities, newCity]);
+      const updatedCities = [...cities, newCity].sort((a, b) => a.name.localeCompare(b.name));
+      setCities(updatedCities);
     }
+  };
+
+  const deleteCity = (cityId: string) => {
+    setCities(cities.filter(city => city.id !== cityId));
   };
 
   const addState = (stateName: string) => {
@@ -184,8 +198,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!Array.isArray(data.salones) || !Array.isArray(data.cities) || !Array.isArray(data.states)) return;
 
     setStates(data.states);
-    setCities(data.cities);
-    setSalones(data.salones);
+
+    // Fusionar ciudades evitando duplicados por nombre y estado
+    setCities(prevCities => {
+      const existing = [...prevCities];
+      const nuevas = data.cities;
+      const isDuplicateCity = (a, b) =>
+        a.name.trim().toLowerCase() === b.name.trim().toLowerCase() &&
+        a.stateId === b.stateId;
+
+      let fusionadas = [...existing];
+      nuevas.forEach(nueva => {
+        const idx = fusionadas.findIndex(exist => isDuplicateCity(exist, nueva));
+        if (idx !== -1) {
+          fusionadas[idx] = { ...fusionadas[idx], ...nueva };
+        } else {
+          fusionadas.push(nueva);
+        }
+      });
+      // Eliminar duplicados por name y stateId
+      const unique = fusionadas.filter((city, idx, arr) =>
+        arr.findIndex(c => c.name.trim().toLowerCase() === city.name.trim().toLowerCase() && c.stateId === city.stateId) === idx
+      );
+      // Ordenar alfabéticamente
+      return unique.sort((a, b) => a.name.localeCompare(b.name));
+      // Ordenar alfabéticamente
+      return fusionadas.sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    // Fusionar salones evitando duplicados por nombre, ciudad y estado
+    setSalones(prevSalones => {
+      const existing = [...prevSalones];
+      const nuevos = data.salones;
+      const isDuplicate = (a, b) =>
+        a.hotelName.trim().toLowerCase() === b.hotelName.trim().toLowerCase() &&
+        a.city.trim().toLowerCase() === b.city.trim().toLowerCase() &&
+        a.state.trim().toLowerCase() === b.state.trim().toLowerCase();
+
+      let fusionados = [...existing];
+      nuevos.forEach(nuevo => {
+        const idx = fusionados.findIndex(exist => isDuplicate(exist, nuevo));
+        if (idx !== -1) {
+          fusionados[idx] = { ...fusionados[idx], ...nuevo };
+        } else {
+          fusionados.push(nuevo);
+        }
+      });
+      // Eliminar duplicados por hotelName, city y state
+      const unique = fusionados.filter((salon, idx, arr) =>
+        arr.findIndex(s =>
+          s.hotelName.trim().toLowerCase() === salon.hotelName.trim().toLowerCase() &&
+          s.city.trim().toLowerCase() === salon.city.trim().toLowerCase() &&
+          s.state.trim().toLowerCase() === salon.state.trim().toLowerCase()
+        ) === idx
+      );
+      // Ordenar alfabéticamente
+      return unique.sort((a, b) => a.hotelName.localeCompare(b.hotelName));
+      // Ordenar alfabéticamente
+      return fusionados.sort((a, b) => a.hotelName.localeCompare(b.hotelName));
+    });
   };
 
   return (
@@ -203,7 +274,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteSalon,
         getSalonsByCity,
         addCity,
+        deleteCity,
         addState,
+        editStateImage,
         exportData,
         importData,
       }}

@@ -1,38 +1,78 @@
-import { ChevronRight, Star } from 'lucide-react';
+import { ChevronRight, Star, Trash2, Edit2 } from 'lucide-react';
 import type { City } from '../types';
 import { useApp } from '../context/AppContext';
+
 
 interface CityCardProps {
   city: City;
   onClick: () => void;
+  onEditImage?: () => void;
+  onDelete?: () => void;
 }
 
-export const CityCard = ({ city, onClick }: CityCardProps) => {
+
+
+export const CityCard = ({ city, onClick, onEditImage, onDelete }: CityCardProps) => {
   const { salones } = useApp();
   const salonCount = salones.filter(s => s.city === city.name).length;
 
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Evita el click si se hace en los botones de editar/eliminar
+    if ((e.target as HTMLElement).closest('button')) return;
+    onClick();
+  };
+
   return (
-    <button
-      onClick={onClick}
-      className="card card-hover group overflow-hidden h-32"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all" />
-      <div className="relative p-6 h-full flex flex-col justify-between">
-        <div>
+    <div className="card card-hover group overflow-hidden h-44 flex flex-col p-0 relative" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+      {city.coverImage && (
+        <img
+          src={city.coverImage}
+          alt={city.name}
+          className="w-full h-24 object-cover rounded-t"
+        />
+      )}
+      <div className="relative p-4 h-full flex flex-col justify-between flex-1">
+        <div className="flex justify-between items-center mb-2">
           <h3 className="text-lg font-bold text-white">{city.name}</h3>
-          <p className="text-xs text-gray-400 mt-1">{salonCount} salones registrados</p>
+          <div className="flex gap-2">
+            {typeof onDelete === 'function' && (
+              <button
+                className="bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-opacity"
+                title="Eliminar ciudad"
+                onClick={onDelete}
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+            {typeof onEditImage === 'function' && (
+              <button
+                className="bg-blue-600 text-white rounded-full p-1 hover:bg-blue-700 transition-opacity"
+                title="Editar imagen de ciudad"
+                onClick={onEditImage}
+              >
+                <Edit2 className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex justify-between items-center">
+        <p className="text-xs text-gray-400 mb-2">{salonCount} salones registrados</p>
+        <div className="flex justify-between items-center mt-2">
           {salonCount > 3 && (
             <div className="flex items-center gap-1 text-yellow-400">
               <Star className="w-4 h-4" />
               <span className="text-xs">Más usado</span>
             </div>
           )}
-          <ChevronRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
+          <button
+            onClick={onClick}
+            className="ml-auto"
+            title="Ver ciudad"
+          >
+            <ChevronRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
       </div>
-    </button>
+    </div>
   );
 };
 

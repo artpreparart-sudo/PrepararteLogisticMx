@@ -54,11 +54,13 @@ export interface State {
   id: string;
   name: string;
   gradient: string;
+  backgroundImage?: string; // Imagen de fondo editable
 }
 
 export interface City {
   id: string;
   stateId: string;
   name: string;
+  coverImage?: string; // URL o base64 de la imagen de portada
   mostUsed?: boolean;
 }

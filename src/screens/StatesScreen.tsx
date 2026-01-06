@@ -8,9 +8,10 @@ interface StatesScreenProps {
 }
 
 export const StatesScreen = ({ onStateSelect }: StatesScreenProps) => {
-  const { states, addState } = useApp();
+  const { states, addState, editStateImage } = useApp();
   const [showAddState, setShowAddState] = useState(false);
   const [newStateName, setNewStateName] = useState('');
+  const [editingStateId, setEditingStateId] = useState<string | null>(null);
 
   const handleAddState = () => {
     if (newStateName.trim()) {
@@ -39,9 +40,41 @@ export const StatesScreen = ({ onStateSelect }: StatesScreenProps) => {
             key={state.id}
             state={state}
             onClick={() => onStateSelect(state.id)}
+            onEditImage={() => setEditingStateId(state.id)}
           />
         ))}
       </div>
+
+      {/* Modal para editar imagen de fondo de estado */}
+      {editingStateId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="card p-6 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold mb-4 text-white">Editar imagen de fondo</h2>
+            <input
+              type="file"
+              accept="image/*"
+              className="input-field mb-4"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    editStateImage(editingStateId, ev.target?.result as string);
+                    setEditingStateId(null);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            <button
+              onClick={() => setEditingStateId(null)}
+              className="btn-secondary w-full"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Botón Agregar Estado */}
       <div className="pt-8 border-t border-dark-700">
