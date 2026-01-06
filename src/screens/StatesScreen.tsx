@@ -12,6 +12,7 @@ export const StatesScreen = ({ onStateSelect }: StatesScreenProps) => {
   const [showAddState, setShowAddState] = useState(false);
   const [newStateName, setNewStateName] = useState('');
   const [editingStateId, setEditingStateId] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string>('');
 
   const handleAddState = () => {
     if (newStateName.trim()) {
@@ -41,6 +42,7 @@ export const StatesScreen = ({ onStateSelect }: StatesScreenProps) => {
             state={state}
             onClick={() => onStateSelect(state.id)}
             onEditImage={() => setEditingStateId(state.id)}
+            onRemoveImage={state.backgroundImage ? () => editStateImage(state.id, null) : undefined}
           />
         ))}
       </div>
@@ -50,28 +52,51 @@ export const StatesScreen = ({ onStateSelect }: StatesScreenProps) => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="card p-6 max-w-md w-full mx-4">
             <h2 className="text-2xl font-bold mb-4 text-white">Editar imagen de fondo</h2>
-            <input
-              type="file"
-              accept="image/*"
-              className="input-field mb-4"
-              onChange={e => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onload = (ev) => {
-                    editStateImage(editingStateId, ev.target?.result as string);
-                    setEditingStateId(null);
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-            />
-            <button
-              onClick={() => setEditingStateId(null)}
-              className="btn-secondary w-full"
-            >
-              Cancelar
-            </button>
+            <label className="block text-white mb-2" htmlFor="state-bg-upload">Subir nueva imagen de fondo</label>
+            <div className="mb-4">
+              <label htmlFor="state-bg-upload" className="btn-secondary cursor-pointer inline-block">
+                Seleccionar archivo
+              </label>
+              <input
+                id="state-bg-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  setSelectedFileName(file ? file.name : '');
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      editStateImage(editingStateId, ev.target?.result as string);
+                      setEditingStateId(null);
+                      setSelectedFileName('');
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+              <span className="ml-2 text-white align-middle" id="state-bg-filename">{selectedFileName || 'Ningún archivo seleccionado'}</span>
+            </div>
+            {/* ...resto del código... */}
+            // ...existing code...
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  editStateImage(editingStateId, null);
+                  setEditingStateId(null);
+                }}
+                className="btn-danger flex-1"
+              >
+                Eliminar fondo
+              </button>
+              <button
+                onClick={() => setEditingStateId(null)}
+                className="btn-secondary flex-1"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}

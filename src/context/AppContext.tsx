@@ -16,12 +16,16 @@ interface AppContextType {
   deleteSalon: (id: string) => void;
   getSalonsByCity: (cityName: string, stateName: string) => Salon[];
   addCity: (stateName: string, cityName: string, coverImage?: string) => void;
+  updateCityImage: (cityId: string, coverImage: string | null) => void;
   deleteCity: (cityId: string) => void;
   addState: (stateName: string) => void;
   editStateImage: (stateId: string, backgroundImage: string) => void;
   exportData: () => BackupPayload;
   importData: (data: BackupPayload) => void;
 }
+  const updateCityImage = (cityId: string, coverImage: string | null) => {
+    setCities(cities => cities.map(city => city.id === cityId ? { ...city, coverImage: coverImage || undefined } : city));
+  };
 
 interface BackupPayload {
   version: number;
@@ -270,6 +274,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteSalon,
         getSalonsByCity,
         addCity,
+        updateCityImage,
         deleteCity,
         addState,
         editStateImage,

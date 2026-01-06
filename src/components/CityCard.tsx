@@ -24,12 +24,16 @@ export const CityCard = ({ city, onClick, onEditImage, onDelete }: CityCardProps
 
   return (
     <div className="card card-hover group overflow-hidden h-44 flex flex-col p-0 relative" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
-      {city.coverImage && (
+      {city.coverImage ? (
         <img
           src={city.coverImage}
           alt={city.name}
           className="w-full h-24 object-cover rounded-t"
         />
+      ) : (
+        <div className="w-full h-24 bg-gray-300 rounded-t flex items-center justify-center text-gray-500 text-xs">
+          Sin imagen
+        </div>
       )}
       <div className="relative p-4 h-full flex flex-col justify-between flex-1">
         <div className="flex justify-between items-center mb-2">

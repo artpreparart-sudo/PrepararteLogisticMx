@@ -16,27 +16,20 @@ export const CitiesScreen = ({
   onBack,
   onCitySelect,
 }: CitiesScreenProps) => {
-  const { cities, addCity, deleteCity } = useApp();
+  const { cities, addCity, updateCityImage, deleteCity } = useApp();
   const [editingCityId, setEditingCityId] = useState<string | null>(null);
-  // Eliminado editImage porque no se usa
+  const [pendingCityImage, setPendingCityImage] = useState<string | undefined>(undefined);
   const [showAddCity, setShowAddCity] = useState(false);
   const [newCityName, setNewCityName] = useState('');
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
-
+  const [selectedFileName, setSelectedFileName] = useState<string>('');
   const stateCities = cities.filter((city) => city.stateId === stateId);
 
-  const handleAddCity = () => {
-    if (newCityName.trim()) {
-      addCity(stateName, newCityName.trim(), coverImage);
-      setNewCityName('');
-      setCoverImage(undefined);
-      setShowAddCity(false);
-    }
-  };
-
+  // Maneja el cambio de imagen en el modal de agregar ciudad
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFileName(file.name);
       const reader = new FileReader();
       reader.onload = (ev) => {
         setCoverImage(ev.target?.result as string);
@@ -45,16 +38,22 @@ export const CitiesScreen = ({
     }
   };
 
+  // Agrega una nueva ciudad
+  const handleAddCity = () => {
+    if (!newCityName.trim()) return;
+    addCity(stateName, newCityName.trim(), coverImage);
+    setNewCityName('');
+    setCoverImage(undefined);
+    setSelectedFileName('');
+    setShowAddCity(false);
+  };
+
   const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>, cityId: string) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        // Actualizar la imagen de portada de la ciudad
-        const city = cities.find(c => c.id === cityId);
-        if (city) {
-          addCity(stateName, city.name, ev.target?.result as string); // Reutiliza addCity para actualizar
-        }
+        updateCityImage(cityId, ev.target?.result as string);
         setEditingCityId(null);
       };
       reader.readAsDataURL(file);
@@ -109,14 +108,50 @@ export const CitiesScreen = ({
               type="file"
               accept="image/*"
               className="input-field mb-4"
-              onChange={(e) => handleEditImageChange(e, editingCityId)}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    setPendingCityImage(ev.target?.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                }
+                // Limpiar el input para permitir seleccionar la misma imagen dos veces seguidas
+                e.target.value = '';
+              }}
             />
-            <button
-              onClick={() => setEditingCityId(null)}
-              className="btn-secondary w-full"
-            >
-              Cancelar
-            </button>
+            {/* Previsualización: si hay imagen nueva, mostrarla; si no, mostrar la actual */}
+            {(pendingCityImage || (editingCityId && cities.find(c => c.id === editingCityId)?.coverImage)) && (
+              <img
+                src={pendingCityImage || cities.find(c => c.id === editingCityId)?.coverImage}
+                alt="Previsualización"
+                className="mb-4 max-h-32 rounded shadow"
+              />
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (pendingCityImage) {
+                    updateCityImage(editingCityId, pendingCityImage);
+                  }
+                  setEditingCityId(null);
+                  setPendingCityImage(undefined);
+                }}
+                className="btn-primary flex-1"
+              >
+                Guardar cambios
+              </button>
+              <button
+                onClick={() => {
+                  setEditingCityId(null);
+                  setPendingCityImage(undefined);
+                }}
+                className="btn-secondary flex-1"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -146,12 +181,20 @@ export const CitiesScreen = ({
                 className="input-field mb-4"
                 onKeyPress={(e) => e.key === 'Enter' && handleAddCity()}
               />
-              <input
-                type="file"
-                accept="image/*"
-                className="input-field mb-4"
-                onChange={handleImageChange}
-              />
+              <label className="block text-white mb-2" htmlFor="city-bg-upload">Subir imagen de portada</label>
+              <div className="mb-4">
+                <label htmlFor="city-bg-upload" className="btn-secondary cursor-pointer inline-block">
+                  Seleccionar archivo
+                </label>
+                <input
+                  id="city-bg-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+                <span className="ml-2 text-white align-middle" id="city-bg-filename">{selectedFileName || 'Ningún archivo seleccionado'}</span>
+              </div>
               {coverImage && (
                 <img src={coverImage} alt="Portada" className="mb-4 max-h-32 rounded shadow" />
               )}

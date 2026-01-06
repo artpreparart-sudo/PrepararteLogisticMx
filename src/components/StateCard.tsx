@@ -6,9 +6,10 @@ interface StateCardProps {
   state: State;
   onClick: () => void;
   onEditImage?: () => void;
+  onRemoveImage?: () => void;
 }
 
-export const StateCard = ({ state, onClick, onEditImage }: StateCardProps) => {
+export const StateCard = ({ state, onClick, onEditImage, onRemoveImage }: StateCardProps) => {
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Evita el click si se hace en el botón de editar
     if ((e.target as HTMLElement).closest('button')) return;
@@ -16,17 +17,18 @@ export const StateCard = ({ state, onClick, onEditImage }: StateCardProps) => {
   };
   return (
     <div className="card card-hover group overflow-hidden state-card-bg relative" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
-      {state.backgroundImage ? (
-        <img
-          src={state.backgroundImage}
-          alt={state.name}
-          className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300 z-0"
-        />
-      ) : (
+      {state.backgroundImage && (
+        <>
+          <img
+            src={state.backgroundImage}
+            alt="Fondo"
+            className="absolute inset-0 w-full h-full object-cover rounded-xl z-0"
+          />
+        </>
+      )}
         <div
           className={`absolute inset-0 bg-gradient-to-br ${state.gradient} opacity-10 group-hover:opacity-20 transition-opacity duration-300 z-0`}
         />
-      )}
       <div className="relative p-6 flex flex-col justify-between h-full z-10">
         <div className="flex justify-between items-center">
           <div>
