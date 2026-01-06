@@ -50,7 +50,6 @@ export const CitiesScreen = ({
     if (file) {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        setEditImage(ev.target?.result as string);
         // Actualizar la imagen de portada de la ciudad
         const city = cities.find(c => c.id === cityId);
         if (city) {
