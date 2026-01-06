@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { CityCard } from '../components/CityCard';
 import { useApp } from '../context/AppContext';
 
@@ -18,7 +18,7 @@ export const CitiesScreen = ({
 }: CitiesScreenProps) => {
   const { cities, addCity, deleteCity } = useApp();
   const [editingCityId, setEditingCityId] = useState<string | null>(null);
-  const [editImage, setEditImage] = useState<string | undefined>(undefined);
+  // Eliminado editImage porque no se usa
   const [showAddCity, setShowAddCity] = useState(false);
   const [newCityName, setNewCityName] = useState('');
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);

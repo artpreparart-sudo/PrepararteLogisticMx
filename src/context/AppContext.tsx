@@ -203,13 +203,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCities(prevCities => {
       const existing = [...prevCities];
       const nuevas = data.cities;
-      const isDuplicateCity = (a, b) =>
+      const isDuplicateCity = (a: City, b: City) =>
         a.name.trim().toLowerCase() === b.name.trim().toLowerCase() &&
         a.stateId === b.stateId;
 
       let fusionadas = [...existing];
-      nuevas.forEach(nueva => {
-        const idx = fusionadas.findIndex(exist => isDuplicateCity(exist, nueva));
+      nuevas.forEach((nueva: City) => {
+        const idx = fusionadas.findIndex((exist: City) => isDuplicateCity(exist, nueva));
         if (idx !== -1) {
           fusionadas[idx] = { ...fusionadas[idx], ...nueva };
         } else {
@@ -217,27 +217,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       });
       // Eliminar duplicados por name y stateId
-      const unique = fusionadas.filter((city, idx, arr) =>
-        arr.findIndex(c => c.name.trim().toLowerCase() === city.name.trim().toLowerCase() && c.stateId === city.stateId) === idx
+      const unique = fusionadas.filter((city: City, idx: number, arr: City[]) =>
+        arr.findIndex((c: City) => c.name.trim().toLowerCase() === city.name.trim().toLowerCase() && c.stateId === city.stateId) === idx
       );
       // Ordenar alfabéticamente
-      return unique.sort((a, b) => a.name.localeCompare(b.name));
-      // Ordenar alfabéticamente
-      return fusionadas.sort((a, b) => a.name.localeCompare(b.name));
+      return unique.sort((a: City, b: City) => a.name.localeCompare(b.name));
     });
 
     // Fusionar salones evitando duplicados por nombre, ciudad y estado
     setSalones(prevSalones => {
       const existing = [...prevSalones];
       const nuevos = data.salones;
-      const isDuplicate = (a, b) =>
+      const isDuplicate = (a: Salon, b: Salon) =>
         a.hotelName.trim().toLowerCase() === b.hotelName.trim().toLowerCase() &&
         a.city.trim().toLowerCase() === b.city.trim().toLowerCase() &&
         a.state.trim().toLowerCase() === b.state.trim().toLowerCase();
 
       let fusionados = [...existing];
-      nuevos.forEach(nuevo => {
-        const idx = fusionados.findIndex(exist => isDuplicate(exist, nuevo));
+      nuevos.forEach((nuevo: Salon) => {
+        const idx = fusionados.findIndex((exist: Salon) => isDuplicate(exist, nuevo));
         if (idx !== -1) {
           fusionados[idx] = { ...fusionados[idx], ...nuevo };
         } else {
@@ -245,17 +243,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       });
       // Eliminar duplicados por hotelName, city y state
-      const unique = fusionados.filter((salon, idx, arr) =>
-        arr.findIndex(s =>
+      const unique = fusionados.filter((salon: Salon, idx: number, arr: Salon[]) =>
+        arr.findIndex((s: Salon) =>
           s.hotelName.trim().toLowerCase() === salon.hotelName.trim().toLowerCase() &&
           s.city.trim().toLowerCase() === salon.city.trim().toLowerCase() &&
           s.state.trim().toLowerCase() === salon.state.trim().toLowerCase()
         ) === idx
       );
       // Ordenar alfabéticamente
-      return unique.sort((a, b) => a.hotelName.localeCompare(b.hotelName));
-      // Ordenar alfabéticamente
-      return fusionados.sort((a, b) => a.hotelName.localeCompare(b.hotelName));
+      return unique.sort((a: Salon, b: Salon) => a.hotelName.localeCompare(b.hotelName));
     });
   };
 
