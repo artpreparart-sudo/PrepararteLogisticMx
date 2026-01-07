@@ -257,7 +257,7 @@ export const RegisterSalonScreen: React.FC<RegisterSalonScreenProps> = ({
             {/* Cantidad de salones */}
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-300">
-                ¿Cuántos salones cuenta el hotel? *
+                ¿Con cuántos salones cuenta el hotel? *
               </label>
               <select
                 value={numSalones}

@@ -1,3 +1,8 @@
+# Persistencia de imágenes y datos
+
+Las imágenes de portada de las ciudades y todos los datos se almacenan localmente en el navegador usando IndexedDB (ver src/db.ts). Esto asegura que las imágenes y datos persisten incluso si recargas la página o cierras el navegador.
+
+No es necesario usar localStorage adicionalmente, ya que IndexedDB es más robusto y adecuado para almacenar imágenes en base64 y grandes volúmenes de datos.
 # 📍 Agenda Preparate México
 
 Una aplicación web moderna y profesional para la gestión integral de salones de eventos en las 32 entidades federativas mexicanas.

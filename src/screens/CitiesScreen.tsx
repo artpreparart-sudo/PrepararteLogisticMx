@@ -117,7 +117,6 @@ export const CitiesScreen = ({
                   };
                   reader.readAsDataURL(file);
                 }
-                // Limpiar el input para permitir seleccionar la misma imagen dos veces seguidas
                 e.target.value = '';
               }}
             />
@@ -132,8 +131,10 @@ export const CitiesScreen = ({
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  if (pendingCityImage) {
-                    updateCityImage(editingCityId, pendingCityImage);
+                  // Si hay imagen nueva, guardar esa; si no, guardar la actual (para permitir guardar aunque no se haya cambiado)
+                  const imageToSave = pendingCityImage ?? cities.find(c => c.id === editingCityId)?.coverImage;
+                  if (imageToSave) {
+                    updateCityImage(editingCityId, imageToSave);
                   }
                   setEditingCityId(null);
                   setPendingCityImage(undefined);

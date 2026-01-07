@@ -1,3 +1,4 @@
+// NOTA: Las imágenes y datos de ciudades se guardan en IndexedDB (ver src/db.ts), lo que asegura persistencia local incluso tras recargar la página.
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { Salon, State, City } from '../types';
 import { mexicanStates, mexicanCities } from '../data';

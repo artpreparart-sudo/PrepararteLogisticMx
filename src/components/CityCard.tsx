@@ -48,15 +48,6 @@ export const CityCard = ({ city, onClick, onEditImage, onDelete }: CityCardProps
                 <Trash2 className="w-5 h-5" />
               </button>
             )}
-            {typeof onEditImage === 'function' && (
-              <button
-                className="bg-blue-600 text-white rounded-full p-1 hover:bg-blue-700 transition-opacity"
-                title="Editar imagen de ciudad"
-                onClick={onEditImage}
-              >
-                <Edit2 className="w-5 h-5" />
-              </button>
-            )}
           </div>
         </div>
         <p className="text-xs text-gray-400 mb-2">{salonCount} salones registrados</p>
