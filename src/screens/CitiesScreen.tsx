@@ -48,17 +48,7 @@ export const CitiesScreen = ({
     setShowAddCity(false);
   };
 
-  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>, cityId: string) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        updateCityImage(cityId, ev.target?.result as string);
-        setEditingCityId(null);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+
 
   return (
     <div className="space-y-8">
@@ -132,10 +122,8 @@ export const CitiesScreen = ({
               <button
                 onClick={() => {
                   // Si hay imagen nueva, guardar esa; si no, guardar la actual (para permitir guardar aunque no se haya cambiado)
-                  const imageToSave = pendingCityImage ?? cities.find(c => c.id === editingCityId)?.coverImage;
-                  if (imageToSave) {
-                    updateCityImage(editingCityId, imageToSave);
-                  }
+                  const imageToSave = pendingCityImage ?? cities.find(c => c.id === editingCityId)?.coverImage ?? '';
+                  updateCityImage(editingCityId ?? '', imageToSave);
                   setEditingCityId(null);
                   setPendingCityImage(undefined);
                 }}

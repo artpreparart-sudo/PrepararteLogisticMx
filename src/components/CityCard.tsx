@@ -1,18 +1,16 @@
-import { ChevronRight, Star, Trash2, Edit2 } from 'lucide-react';
+import { ChevronRight, Star, Trash2 } from 'lucide-react';
 import type { City } from '../types';
 import { useApp } from '../context/AppContext';
 
 
-interface CityCardProps {
   city: City;
   onClick: () => void;
-  onEditImage?: () => void;
   onDelete?: () => void;
 }
 
 
 
-export const CityCard = ({ city, onClick, onEditImage, onDelete }: CityCardProps) => {
+export const CityCard = ({ city, onClick, onDelete }: CityCardProps) => {
   const { salones } = useApp();
   const salonCount = salones.filter(s => s.city === city.name).length;
 
