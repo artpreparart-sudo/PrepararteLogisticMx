@@ -6,10 +6,9 @@ interface StateCardProps {
   state: State;
   onClick: () => void;
   onEditImage?: () => void;
-  onRemoveImage?: () => void;
 }
 
-export const StateCard = ({ state, onClick, onEditImage, onRemoveImage }: StateCardProps) => {
+export const StateCard = ({ state, onClick, onEditImage }: StateCardProps) => {
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Evita el click si se hace en el botón de editar
     if ((e.target as HTMLElement).closest('button')) return;

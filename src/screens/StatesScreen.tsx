@@ -42,7 +42,6 @@ export const StatesScreen = ({ onStateSelect }: StatesScreenProps) => {
             state={state}
             onClick={() => onStateSelect(state.id)}
             onEditImage={() => setEditingStateId(state.id)}
-            onRemoveImage={state.backgroundImage ? () => editStateImage(state.id, null) : undefined}
           />
         ))}
       </div>

@@ -20,13 +20,11 @@ interface AppContextType {
   updateCityImage: (cityId: string, coverImage: string | null) => void;
   deleteCity: (cityId: string) => void;
   addState: (stateName: string) => void;
-  editStateImage: (stateId: string, backgroundImage: string) => void;
+  editStateImage: (stateId: string, backgroundImage: string | null) => void;
   exportData: () => BackupPayload;
   importData: (data: BackupPayload) => void;
 }
-  const updateCityImage = (cityId: string, coverImage: string | null) => {
-    setCities(cities => cities.map(city => city.id === cityId ? { ...city, coverImage: coverImage || undefined } : city));
-  };
+ 
 
 interface BackupPayload {
   version: number;
@@ -39,17 +37,31 @@ import { loadStates, saveStates } from '../db';
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  function editStateImage(stateId: string, backgroundImage: string) {
-    setStates(states => states.map(state =>
-      state.id === stateId ? { ...state, backgroundImage } : state
-    ));
-  }
+  const editStateImage = (stateId: string, backgroundImage: string | null) => {
+    setStates((states: State[]) =>
+      states.map((state: State) =>
+        state.id === stateId
+          ? { ...state, backgroundImage: backgroundImage || undefined }
+          : state
+      )
+    );
+  };
   const [states, setStates] = useState<State[]>(mexicanStates);
   const [cities, setCities] = useState<City[]>([]);
   const [salones, setSalones] = useState<Salon[]>([]);
   const [selectedState, setSelectedState] = useState<State | null>(null);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const initialized = useRef(false);
+
+  const updateCityImage = (cityId: string, coverImage: string | null) => {
+    setCities((cities: City[]) =>
+      cities.map((city: City) =>
+        city.id === cityId
+          ? { ...city, coverImage: coverImage || undefined }
+          : city
+      )
+    );
+  };
 
   const buildInitialCities = () => {
     const initialCities: City[] = [];

@@ -79,7 +79,6 @@ export const CitiesScreen = ({
               city={city}
               onClick={() => onCitySelect(city.name)}
               onDelete={() => deleteCity(city.id)}
-              onEditImage={() => setEditingCityId(city.id)}
             />
           ))}
         </div>
