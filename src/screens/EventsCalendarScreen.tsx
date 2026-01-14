@@ -269,8 +269,8 @@ export const EventsCalendarScreen: React.FC<EventsCalendarScreenProps> = ({ onOp
                     onClick={() => toggleCourse(course.id)}
                     className={`px-3 py-2 rounded-lg text-sm font-semibold border transition ${
                       active
-                        ? `${course.color} text-white border-transparent`
-                        : 'bg-dark-800 text-gray-300 border-dark-600 hover:border-purple-500'
+                        ? `${course.color} text-white border-transparent shadow-lg shadow-white/25 ring-2 ring-white/30 brightness-110`
+                        : 'bg-dark-800 text-gray-300 border-dark-600 hover:border-purple-500 opacity-80 hover:opacity-100'
                     }`}
                   >
                     {course.label}
@@ -291,7 +291,9 @@ export const EventsCalendarScreen: React.FC<EventsCalendarScreenProps> = ({ onOp
                     type="button"
                     onClick={() => toggleRoute(route.id)}
                     className={`px-3 py-2 rounded-lg text-sm font-semibold border transition bg-gradient-to-r ${route.gradient} ${
-                      active ? 'text-white shadow-lg border-transparent' : 'text-white/80 border-white/20 opacity-80'
+                      active
+                        ? 'text-white shadow-lg shadow-white/25 ring-2 ring-white/30 brightness-115'
+                        : 'text-white/80 border-white/10 opacity-60 hover:opacity-85'
                     }`}
                   >
                     {route.label}
@@ -527,7 +529,7 @@ export const EventsCalendarScreen: React.FC<EventsCalendarScreenProps> = ({ onOp
                             key={c}
                             className={`px-2 py-1 rounded text-xs font-semibold text-white flex items-center gap-2 ${courseColor(c)}`}
                           >
-                            <span className={cancelled ? 'line-through' : ''}>{courseOptions.find((co) => co.id === c)?.label || c}</span>
+                            <span className={cancelled ? 'line-through decoration-4 decoration-red-500' : ''}>{courseOptions.find((co) => co.id === c)?.label || c}</span>
                             <button
                               onClick={() => toggleCancelCourse(ev.id, c)}
                               className="bg-black/20 rounded-full p-1 hover:bg-black/40"
