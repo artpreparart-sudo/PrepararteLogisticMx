@@ -6,9 +6,10 @@ import { CitiesScreen } from './screens/CitiesScreen';
 import { SalonsScreen } from './screens/SalonsScreen';
 import { RegisterSalonScreen } from './screens/RegisterSalonScreen';
 import { SalonDetailScreen } from './screens/SalonDetailScreen';
+import { EventsCalendarScreen } from './screens/EventsCalendarScreen';
 import './index.css';
 
-type Screen = 'states' | 'cities' | 'salons' | 'register' | 'detail';
+type Screen = 'states' | 'cities' | 'salons' | 'register' | 'detail' | 'events';
 
 function AppContent() {
   const { states, cities, salones, exportData, importData } = useApp();
@@ -190,6 +191,21 @@ function AppContent() {
     }
   };
 
+  const handleOpenSalonFromEvents = (salon: Salon) => {
+    const normalizedSalonState = salon.state.trim().toLowerCase();
+    const stateMatch = states.find(
+      (s) => s.id === salon.state || s.name.trim().toLowerCase() === normalizedSalonState
+    );
+    if (stateMatch) {
+      setSelectedStateId(stateMatch.id);
+    } else {
+      setSelectedStateId('');
+    }
+    setSelectedCity(salon.city);
+    setSelectedSalon(salon);
+    setCurrentScreen('detail');
+  };
+
   return (
     <div className="min-h-screen bg-dark-950">
       {/* Navbar */}
@@ -261,12 +277,35 @@ function AppContent() {
             </div>
 
             <div className="flex items-center gap-3">
-              <p className="text-gray-400 text-sm">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentScreen('states')}
+                  className={`px-3 py-2 text-xs font-semibold rounded-lg border ${
+                    currentScreen !== 'events'
+                      ? 'bg-dark-800 text-gray-100 border-dark-600'
+                      : 'bg-dark-900 text-gray-300 border-dark-700 hover:border-purple-500'
+                  }`}
+                >
+                  Agenda
+                </button>
+                <button
+                  onClick={() => setCurrentScreen('events')}
+                  className={`px-3 py-2 text-xs font-semibold rounded-lg border ${
+                    currentScreen === 'events'
+                      ? 'bg-purple-600 text-white border-purple-500'
+                      : 'bg-dark-900 text-gray-300 border-dark-700 hover:border-purple-500'
+                  }`}
+                >
+                  Calendario de eventos
+                </button>
+              </div>
+              <p className="text-gray-400 text-sm hidden sm:block">
                 {currentScreen === 'states' && 'Selecciona un estado'}
                 {currentScreen === 'cities' && `${selectedState?.name}`}
                 {currentScreen === 'salons' && `${selectedCity}, ${selectedState?.name}`}
                 {currentScreen === 'register' && `Registrar salón en ${selectedCity}`}
                 {currentScreen === 'detail' && selectedSalon?.hotelName}
+                {currentScreen === 'events' && 'Agenda de eventos por rutas y cursos'}
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -333,6 +372,9 @@ function AppContent() {
             onEdit={() => handleEditSalon(selectedSalon)}
             onDelete={handleDeleteSalon}
           />
+        )}
+        {currentScreen === 'events' && (
+          <EventsCalendarScreen onOpenSalon={handleOpenSalonFromEvents} />
         )}
       </main>
 

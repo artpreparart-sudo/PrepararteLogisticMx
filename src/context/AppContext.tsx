@@ -1,13 +1,14 @@
 // NOTA: Las imágenes y datos de ciudades se guardan en IndexedDB (ver src/db.ts), lo que asegura persistencia local incluso tras recargar la página.
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import type { Salon, State, City } from '../types';
+import type { Salon, State, City, EventItem } from '../types';
 import { mexicanStates, mexicanCities } from '../data';
-import { loadSalones, loadCities, saveSalones, saveCities } from '../db';
+import { loadSalones, loadCities, saveSalones, saveCities, loadEvents, saveEvents } from '../db';
 
 interface AppContextType {
   states: State[];
   cities: City[];
   salones: Salon[];
+  events: EventItem[];
   selectedState: State | null;
   selectedCity: City | null;
   setSelectedState: (state: State | null) => void;
@@ -21,6 +22,9 @@ interface AppContextType {
   deleteCity: (cityId: string) => void;
   addState: (stateName: string) => void;
   editStateImage: (stateId: string, backgroundImage: string | null) => void;
+  addEvent: (event: EventItem) => void;
+  updateEvent: (id: string, data: Partial<EventItem>) => void;
+  deleteEvent: (id: string) => void;
   exportData: () => BackupPayload;
   importData: (data: BackupPayload) => void;
 }
@@ -31,6 +35,7 @@ interface BackupPayload {
   states: State[];
   cities: City[];
   salones: Salon[];
+  events: EventItem[];
 }
 import { loadStates, saveStates } from '../db';
 
@@ -49,6 +54,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [states, setStates] = useState<State[]>(mexicanStates);
   const [cities, setCities] = useState<City[]>([]);
   const [salones, setSalones] = useState<Salon[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [selectedState, setSelectedState] = useState<State | null>(null);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const initialized = useRef(false);
@@ -82,10 +88,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let cancelled = false;
     (async () => {
       try {
-        const [dbSalones, dbCities, dbStates] = await Promise.all([
+        const [dbSalones, dbCities, dbStates, dbEvents] = await Promise.all([
           loadSalones(),
           loadCities(),
           loadStates(),
+          loadEvents(),
         ]);
 
         if (cancelled) return;
@@ -102,6 +109,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (dbStates) {
           setStates(dbStates);
+        }
+
+        if (dbEvents) {
+          setEvents(dbEvents);
         }
       } catch {
         if (!cancelled) {
@@ -126,6 +137,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       /* ignore write failures */
     });
   }, [salones]);
+
+  // Save events to IndexedDB whenever they change
+  useEffect(() => {
+    if (!initialized.current) return;
+    saveEvents(events).catch(() => {
+      /* ignore write failures */
+    });
+  }, [events]);
 
   // Save cities to IndexedDB whenever they change
   useEffect(() => {
@@ -203,11 +222,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const addEvent = (event: EventItem) => {
+    const sorted = [...events, event].sort((a, b) => a.date.localeCompare(b.date));
+    setEvents(sorted);
+  };
+
+  const updateEvent = (id: string, data: Partial<EventItem>) => {
+    setEvents(prev =>
+      prev.map(ev => (ev.id === id ? { ...ev, ...data, updatedAt: new Date().toISOString() } : ev))
+    );
+  };
+
+  const deleteEvent = (id: string) => {
+    setEvents(prev => prev.filter(ev => ev.id !== id));
+  };
+
   const exportData = (): BackupPayload => ({
     version: 1,
     states,
     cities,
     salones,
+    events,
   });
 
   const importData = (data: BackupPayload) => {
@@ -292,6 +327,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Ordenar alfabéticamente
       return unique.sort((a: Salon, b: Salon) => a.hotelName.localeCompare(b.hotelName));
     });
+
+    // Fusionar eventos evitando duplicados por fecha + estado + ciudad
+    setEvents(prevEvents => {
+      const isSameEvent = (a: EventItem, b: EventItem) =>
+        a.date === b.date && a.stateId === b.stateId && a.city.trim().toLowerCase() === b.city.trim().toLowerCase();
+
+      const merged = [...prevEvents];
+      (data.events || []).forEach((incoming: EventItem) => {
+        const idx = merged.findIndex((ev) => isSameEvent(ev, incoming));
+        if (idx !== -1) {
+          // preservar salons asignados si el backup no trae
+          const existing = merged[idx];
+          const courseSalons = incoming.courseSalons?.length ? incoming.courseSalons : existing.courseSalons;
+          merged[idx] = { ...existing, ...incoming, courseSalons };
+        } else {
+          merged.push(incoming);
+        }
+      });
+
+      return merged
+        .filter((ev, idx, arr) => arr.findIndex(e => isSameEvent(e, ev)) === idx)
+        .sort((a, b) => a.date.localeCompare(b.date));
+    });
   };
 
   return (
@@ -300,6 +358,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         states,
         cities,
         salones,
+        events,
         selectedState,
         selectedCity,
         setSelectedState,
@@ -313,6 +372,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCity,
         addState,
         editStateImage,
+        addEvent,
+        updateEvent,
+        deleteEvent,
         exportData,
         importData,
       }}

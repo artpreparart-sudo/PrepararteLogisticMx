@@ -17,6 +17,30 @@ export interface Salon {
   updatedAt: string;
 }
 
+export type CourseId = 'epoxy' | 'tuning' | 'globo' | 'maquillaje';
+export type RouteId = 'ruta1' | 'ruta2' | 'ruta3';
+
+export interface EventCourseSalon {
+  course: CourseId;
+  salonId: string | null;
+}
+
+export interface EventItem {
+  id: string;
+  date: string; // ISO YYYY-MM-DD
+  stateId: string;
+  stateName: string;
+  city: string;
+  routes: RouteId[];
+  courses: CourseId[];
+  courseSalons: EventCourseSalon[];
+  cancelledCourses: CourseId[];
+  status: 'active' | 'cancelled';
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SalonDetail {
   id: string;
   nombre: string;

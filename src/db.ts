@@ -1,12 +1,13 @@
 // IndexedDB helpers for offline persistence
-import type { Salon, City, State } from './types';
+import type { Salon, City, State, EventItem } from './types';
 const DB_NAME = 'ageMx-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_SALONES = 'salones';
 const STORE_CITIES = 'cities';
 const STORE_STATES = 'states';
+const STORE_EVENTS = 'events';
 
-type StoreName3 = typeof STORE_SALONES | typeof STORE_CITIES | typeof STORE_STATES;
+type StoreName3 = typeof STORE_SALONES | typeof STORE_CITIES | typeof STORE_STATES | typeof STORE_EVENTS;
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -22,6 +23,9 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(STORE_STATES)) {
         db.createObjectStore(STORE_STATES);
+      }
+      if (!db.objectStoreNames.contains(STORE_EVENTS)) {
+        db.createObjectStore(STORE_EVENTS);
       }
     };
 
@@ -80,4 +84,12 @@ export function loadStates() {
 
 export function saveStates(states: State[]) {
   return writeStore(STORE_STATES, states);
+}
+
+export function loadEvents() {
+  return readStore<EventItem[]>(STORE_EVENTS);
+}
+
+export function saveEvents(events: EventItem[]) {
+  return writeStore(STORE_EVENTS, events);
 }
