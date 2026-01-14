@@ -487,6 +487,10 @@ export const EventsCalendarScreen: React.FC<EventsCalendarScreenProps> = ({ onOp
             {selectedDayEvents.map((ev) => {
               const courseSalonsMap = Object.fromEntries(ev.courseSalons.map((c) => [c.course, c.salonId]));
               const availableSalons = salonsForEvent(ev);
+              const allCoursesWithSalon = ev.courses.every((c) => {
+                const sid = courseSalonsMap[c];
+                return !!sid && !!findSalonById(sid);
+              });
               return (
                 <div key={ev.id} className="border border-dark-700 rounded-lg p-3 bg-dark-800/70 space-y-3">
                   <div className="flex items-center justify-between">
@@ -495,7 +499,12 @@ export const EventsCalendarScreen: React.FC<EventsCalendarScreenProps> = ({ onOp
                       <p className="text-sm text-gray-300">{ev.stateName}</p>
                       <h4 className="text-white font-semibold mt-1">{monthNames[new Date(ev.date).getMonth()]} {new Date(ev.date).getDate()}</h4>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                      {allCoursesWithSalon && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-green-200 bg-green-900/40 border border-green-700 px-2 py-1 rounded">
+                          <CheckCircle2 className="w-4 h-4" /> Completado
+                        </span>
+                      )}
                       <button
                         onClick={() => setEditFromEvent(ev)}
                         className="px-3 py-1 rounded bg-blue-600/70 text-white text-xs"
