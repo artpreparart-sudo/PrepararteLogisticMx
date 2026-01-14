@@ -214,9 +214,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!data || typeof data !== 'object') return;
     if (!Array.isArray(data.salones) || !Array.isArray(data.cities) || !Array.isArray(data.states)) return;
 
-    setStates(data.states);
+    // Fusionar estados preservando imágenes locales si el backup no trae
+    setStates(prevStates => {
+      const isSameState = (a: State, b: State) => a.id === b.id || a.name.trim().toLowerCase() === b.name.trim().toLowerCase();
 
-    // Fusionar ciudades evitando duplicados por nombre y estado
+      const merged: State[] = [...prevStates];
+      data.states.forEach((incoming) => {
+        const idx = merged.findIndex((exist) => isSameState(exist, incoming));
+        if (idx !== -1) {
+          const existing = merged[idx];
+          const backgroundImage = incoming.backgroundImage ?? existing.backgroundImage;
+          merged[idx] = { ...existing, ...incoming, backgroundImage };
+        } else {
+          merged.push(incoming);
+        }
+      });
+
+      // Quitar duplicados por id/name
+      return merged.filter((state, idx, arr) =>
+        arr.findIndex((s) => isSameState(s, state)) === idx
+      ).sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    // Fusionar ciudades evitando duplicados y preservando portada local si falta en backup
     setCities(prevCities => {
       const existing = [...prevCities];
       const nuevas = data.cities;
@@ -228,7 +248,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       nuevas.forEach((nueva: City) => {
         const idx = fusionadas.findIndex((exist: City) => isDuplicateCity(exist, nueva));
         if (idx !== -1) {
-          fusionadas[idx] = { ...fusionadas[idx], ...nueva };
+          const existingCity = fusionadas[idx];
+          const coverImage = nueva.coverImage ?? existingCity.coverImage;
+          fusionadas[idx] = { ...existingCity, ...nueva, coverImage };
         } else {
           fusionadas.push(nueva);
         }
